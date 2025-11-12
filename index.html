@@ -5,61 +5,22 @@
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Letter That Reveals Itself</title>
   <style>
-    :root {
+    :root{
       --bg: #0f1724;
       --accent: #ff6b6b;
       --muted: rgba(255,255,255,0.65);
       font-family: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
     }
-    html,body {
-      height:100%;
-      margin:0;
-      background:var(--bg);
-      color:#fff;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-    }
-    .wrap {
-      width:min(820px,94%);
-      padding:28px;
-      border-radius:16px;
-      background:rgba(255,255,255,0.03);
-      box-shadow:0 10px 30px rgba(2,6,23,0.6);
-    }
-    .paper {
-      min-height:320px;
-      padding:48px 40px;
-      border-radius:10px;
-      background:rgba(255,255,255,0.02);
-      cursor:crosshair;
-    }
-    .line {
-      opacity:0;
-      transform:translateY(10px);
-      transition:opacity 600ms, transform 600ms;
-      font-size:20px;
-      line-height:1.45;
-      margin:10px 0;
-    }
-    .line.visible { opacity:1; transform:translateY(0); }
-    .controls { display:flex; align-items:center; gap:12px; margin-top:18px; }
-    .btn {
-      background:rgba(255,255,255,0.03);
-      border:1px solid rgba(255,255,255,0.06);
-      padding:10px 14px;
-      border-radius:10px;
-      cursor:pointer;
-      color:var(--muted);
-      font-weight:600;
-    }
-    .btn.primary {
-      background:linear-gradient(90deg,rgba(255,107,107,0.15),rgba(255,165,85,0.06));
-      color:white;
-      border:1px solid rgba(255,107,107,0.18);
-    }
-    .final-message { margin-top:18px; font-size:18px; color:#ffdfe0; display:none; }
-    .final-message.visible { display:flex; }
+    html,body{height:100%;margin:0;background:var(--bg);color:#fff;display:flex;align-items:center;justify-content:center;}
+    .wrap{width:min(820px,94%);padding:28px;border-radius:16px;background:rgba(255,255,255,0.03);box-shadow:0 10px 30px rgba(2,6,23,0.6);}
+    .paper{min-height:320px;padding:48px 40px;border-radius:10px;background:rgba(255,255,255,0.02);cursor:crosshair;}
+    .line{opacity:0;transform:translateY(10px);transition:opacity 600ms,transform 600ms;font-size:20px;line-height:1.45;margin:10px 0;}
+    .line.visible{opacity:1;transform:translateY(0);}
+    .controls{display:flex;align-items:center;gap:12px;margin-top:18px;}
+    .btn{background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);padding:10px 14px;border-radius:10px;cursor:pointer;color:var(--muted);font-weight:600;}
+    .btn.primary{background:linear-gradient(90deg,rgba(255,107,107,0.15),rgba(255,165,85,0.06));color:white;border:1px solid rgba(255,107,107,0.18);}
+    .final-message{margin-top:18px;font-size:18px;color:#ffdfe0;display:none;}
+    .final-message.visible{display:flex;}
   </style>
 </head>
 <body>
@@ -71,9 +32,7 @@
       <div id="final" class="final-message"><span id="finalText"></span></div>
     </div>
   </div>
-
   <canvas id="confettiCanvas" style="position:fixed;left:0;top:0;pointer-events:none;width:100%;height:100%;z-index:9999;display:none"></canvas>
-
   <script>
     const paper = document.getElementById('paper');
     const smileBtn = document.getElementById('smileBtn');
@@ -81,7 +40,6 @@
     const final = document.getElementById('final');
     const replay = document.getElementById('replay');
 
-    // Fetch letter from backend
     async function fetchLetter() {
       try {
         const resp = await fetch('/api/generate-letter', { method: 'POST' });
@@ -90,7 +48,6 @@
         return json.lines || [];
       } catch (err) {
         console.error('Fetch letter error', err);
-        // fallback text
         return [
           "Hey love,",
           "Even now, thinking of you makes the whole day feel softer.",
@@ -154,7 +111,7 @@
         smileBtn.textContent = 'Sending smiles...';
         runConfetti();
         setTimeout(() => {
-          finalText.textContent = "Then my mission's complete ❤️";
+          finalText.textContent = 'Then my mission\'s complete ❤️';
           final.classList.add('visible');
           smileBtn.style.display = 'none';
         }, 1200);
@@ -180,17 +137,10 @@
       const particles = [];
       const colors = [ [255,107,107], [255,205,86], [86,188,255], [178,102,255], [255,132,180] ];
 
-      function rand(min,max){ return Math.random()*(max-min)+min; }
+      function rand(min,max){ return Math.random()*(max-min)+min }
 
       for(let i=0;i<120;i++){
-        particles.push({
-          x:rand(0,canvas.width), y:rand(-canvas.height,0),
-          vx:rand(-2,2), vy:rand(2,7),
-          size:Math.floor(rand(6,12)),
-          color:colors[Math.floor(rand(0,colors.length))],
-          rot:rand(0,Math.PI*2), vr:rand(-0.12,0.12),
-          ttl:rand(2000,3800), born:Date.now()
-        });
+        particles.push({x:rand(0,canvas.width),y:rand(-canvas.height,0),vx:rand(-2,2),vy:rand(2,7),size:Math.floor(rand(6,12)),color:colors[Math.floor(rand(0,colors.length))],rot:rand(0,Math.PI*2),vr:rand(-0.12,0.12),ttl:rand(2000,3800),born:Date.now()});
       }
 
       let raf;
@@ -203,12 +153,12 @@
           p.x+=p.vx;p.y+=p.vy;p.vy+=0.06;p.rot+=p.vr;
           ctx.save();ctx.translate(p.x,p.y);ctx.rotate(p.rot);
           ctx.fillStyle=`rgba(${p.color[0]},${p.color[1]},${p.color[2]},1)`;
-          ctx.fillRect(-p.size/2,-p.size/2,p.size,p.size*0.6);
-          ctx.restore();
+          ctx.fillRect(-p.size/2,-p.size/2,p.size,p.size*0.6);ctx.restore();
         });
         raf=requestAnimationFrame(frame);
       }
       frame();
+
       setTimeout(()=>{cancelAnimationFrame(raf);ctx.clearRect(0,0,canvas.width,canvas.height);canvas.style.display='none';},4200);
     }
 
