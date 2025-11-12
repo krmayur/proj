@@ -3,255 +3,207 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Letter That Reveals Itself — 5 Local Letters</title>
+  <title>Letter That Reveals Itself</title>
   <style>
     :root{
       --bg:#0f1724; --accent:#ff6b6b; --muted:rgba(255,255,255,0.65);
       font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
     }
     html,body{height:100%;margin:0;background:var(--bg);color:#fff;display:flex;align-items:center;justify-content:center;padding:24px;}
-    .wrap{width:min(920px,98%);border-radius:14px;padding:22px;background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));box-shadow:0 10px 30px rgba(2,6,23,0.6);}
-    .paper{min-height:360px;padding:26px;border-radius:10px;background:rgba(255,255,255,0.02);cursor:crosshair;overflow:auto;max-height:65vh;}
-    .letter{
-      margin-bottom:28px;padding-bottom:16px;border-bottom:1px solid rgba(255,255,255,0.04);
-    }
-    .letter h3{margin:0 0 10px 0;color:#ffc9c9;font-size:1rem;font-weight:700}
-    .line{opacity:0;transform:translateY(8px);transition:opacity 520ms cubic-bezier(.2,.9,.25,1), transform 520ms cubic-bezier(.2,.9,.25,1);font-size:18px;line-height:1.45;margin:8px 0;color:#f7f7fb}
-    .line.visible{opacity:1;transform:translateY(0)}
-    .controls{display:flex;align-items:center;gap:12px;margin-top:14px}
-    .btn{background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);padding:8px 12px;border-radius:10px;cursor:pointer;color:var(--muted);font-weight:600}
-    .btn.primary{background:linear-gradient(90deg,rgba(255,107,107,0.14),rgba(255,165,85,0.06));color:white;border:1px solid rgba(255,107,107,0.18)}
-    .final-message{margin-left:8px;font-size:16px;color:#ffdfe0;display:none}
-    .final-message.visible{display:inline-block}
-    @media (max-width:560px){ .line{font-size:16px} .wrap{padding:14px} .paper{padding:18px} }
+    .wrap{width:min(820px,94%);padding:28px;border-radius:16px;background:rgba(255,255,255,0.03);box-shadow:0 10px 30px rgba(2,6,23,0.6);}
+    .paper{min-height:320px;padding:48px 40px;border-radius:10px;background:rgba(255,255,255,0.02);cursor:crosshair;overflow:auto;max-height:70vh;}
+    .line{opacity:0;transform:translateY(10px);transition:opacity 600ms,transform 600ms;font-size:20px;line-height:1.45;margin:10px 0;}
+    .line.visible{opacity:1;transform:translateY(0);}
+    .controls{display:flex;align-items:center;gap:12px;margin-top:18px;}
+    .btn{background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);padding:10px 14px;border-radius:10px;cursor:pointer;color:var(--muted);font-weight:600;}
+    .btn.primary{background:linear-gradient(90deg,rgba(255,107,107,0.15),rgba(255,165,85,0.06));color:white;border:1px solid rgba(255,107,107,0.18);}
+    .final-message{margin-top:18px;font-size:18px;color:#ffdfe0;display:none;}
+    .final-message.visible{display:flex;}
   </style>
 </head>
 <body>
-  <div class="wrap" role="main">
-    <div id="paper" class="paper" tabindex="0" aria-label="Blank paper. Click or hover to reveal letters."></div>
-
+  <div class="wrap">
+    <div id="paper" class="paper" tabindex="0"></div>
     <div class="controls">
-      <button id="replay" class="btn">New 5 Letters</button>
+      <button id="replay" class="btn">Restart</button>
       <button id="smileBtn" class="btn primary" style="display:none">Press this if you smiled</button>
       <div id="final" class="final-message"><span id="finalText"></span></div>
     </div>
   </div>
-
   <canvas id="confettiCanvas" style="position:fixed;left:0;top:0;pointer-events:none;width:100%;height:100%;z-index:9999;display:none"></canvas>
 
   <script>
-    // ---------- Phrase banks (edit to add more variety) ----------
+    // -------------------------------
+    // 💖 Local love letter generator
+    // -------------------------------
     const GREETINGS = ["Hey love,", "My dearest,", "Hi beautiful,", "Hey you,", "To my favorite person,"];
     const OPENS = [
-      "Every time you cross my mind I find a little smile I can't hide.",
-      "You somehow make the ordinary feel like a scene from my best days.",
-      "When I think of you, everything seems softer and kinder.",
-      "You bring a kind of calm that I didn't know I needed."
+      "Every time you cross my mind, a quiet smile sneaks up on my face.",
+      "You somehow make the ordinary feel like something I never want to end.",
+      "When I think of you, everything softens around the edges.",
+      "You bring a kind of peace I didn’t know I needed."
     ];
     const MIDS = [
-      "Your laugh is my favorite kind of interruption.",
-      "Being with you makes me braver and a little more childish — in the best way.",
-      "I keep small memories of you and pull them out when the world gets loud.",
-      "You turn quiet moments into something I keep replaying in my head."
+      "Your laugh is my favorite sound.",
+      "You make my world a little louder and a lot warmer.",
+      "You turn silence into comfort and chaos into calm.",
+      "Even when we’re apart, you’re in every good thought I have."
     ];
     const METAPHORS = [
-      "If I could code a forever, I'd loop your name on repeat.",
-      "If stars took requests, I'd ask them to spell your smile.",
-      "If feelings had a voice, yours would be my favorite song.",
-      "If warmth were a shape, it would look like you."
+      "If I could code a forever, you’d be my infinite loop.",
+      "If stars took requests, I’d ask them to write your name.",
+      "If feelings had a color, yours would paint my entire sky.",
+      "If love were a language, you’d be my favorite syntax."
     ];
     const CLOSES = [
       "You are my favorite thought and my simplest truth.",
-      "No poem needs to be perfect when it's about you.",
-      "I love you in small ways, big ways, every way in between.",
-      "You make my tomorrow something I actually look forward to."
+      "You make everything else fade into background noise.",
+      "You’re not perfect — you’re real, and that’s better.",
+      "You make tomorrow something I actually look forward to."
     ];
-    const FINAL_LINE = "Press the button if this made you smile — I promise a little celebration on my end. ❤️";
+    const FINAL = "Press the button if this made you smile — I promise a little celebration on my end. ❤️";
 
-    // ---------- Local generator ----------
     function rand(arr){ return arr[Math.floor(Math.random()*arr.length)]; }
 
-    // returns an array of lines for one letter (5-7 lines)
-    function generateOneLetter() {
+    function generateOneLetter(){
       const letter = [];
       letter.push(rand(GREETINGS));
       letter.push(rand(OPENS));
-      // sometimes insert an extra middle line
       letter.push(rand(MIDS));
       if (Math.random() < 0.35) letter.push(rand(MIDS));
       letter.push(rand(METAPHORS));
       letter.push(rand(CLOSES));
-      // ensure final
-      letter.push(FINAL_LINE);
+      letter.push(FINAL);
       return letter;
     }
 
-    // generate N unique-ish letters locally
-    function generateNLetters(n = 5) {
-      const set = new Set();
+    function generateFiveLetters(){
       const letters = [];
-      let attempts = 0;
-      while (letters.length < n && attempts < n * 6) {
-        const l = generateOneLetter();
-        const key = l.join("||");
-        // try to reduce accidental duplicates
-        if (!set.has(key)) {
-          set.add(key);
-          letters.push(l);
-        }
-        attempts++;
-      }
-      // if not enough unique, fill with regenerations
-      while (letters.length < n) letters.push(generateOneLetter());
+      for(let i=0;i<5;i++) letters.push(generateOneLetter());
       return letters;
     }
 
-    // ---------- DOM & reveal logic ----------
+    // -------------------------------
+    // 🌸 Display + Reveal logic
+    // -------------------------------
     const paper = document.getElementById('paper');
     const smileBtn = document.getElementById('smileBtn');
     const finalText = document.getElementById('finalText');
     const final = document.getElementById('final');
     const replay = document.getElementById('replay');
 
-    async function initLocal() {
+    let allLetters = [];
+    let shownIndex = 0;
+
+    async function init(){
+      allLetters = generateFiveLetters();
+      shownIndex = Math.floor(Math.random()*allLetters.length);
+      showLetter(allLetters[shownIndex]);
+    }
+
+    function showLetter(lines){
       paper.innerHTML = '';
       smileBtn.style.display = 'none';
       final.classList.remove('visible');
       finalText.textContent = '';
 
-      const letters = generateNLetters(5);
-
-      letters.forEach((lines, i) => {
-        const container = document.createElement('div');
-        container.className = 'letter';
-
-        const heading = document.createElement('h3');
-        heading.textContent = `Letter ${i+1}`;
-        container.appendChild(heading);
-
-        lines.forEach((t) => {
-          const p = document.createElement('div');
-          p.className = 'line';
-          p.textContent = t;
-          container.appendChild(p);
-        });
-
-        paper.appendChild(container);
+      lines.forEach((t,i)=>{
+        const p = document.createElement('div');
+        p.className='line';
+        p.textContent=t;
+        paper.appendChild(p);
       });
-
       setupReveal();
     }
 
-    function setupReveal() {
+    function setupReveal(){
       const lines = Array.from(document.querySelectorAll('.line'));
       let revealIndex = 0;
       let revealTimer = null;
       let fast = false;
 
-      function revealNext() {
-        if (revealIndex >= lines.length) return;
+      function revealNext(){
+        if(revealIndex >= lines.length) return;
         lines[revealIndex].classList.add('visible');
         revealIndex++;
-        if (revealIndex >= lines.length) {
-          smileBtn.style.display = 'inline-block';
-        }
+        if(revealIndex >= lines.length) smileBtn.style.display = 'inline-block';
       }
 
-      function startAutoReveal() {
-        if (revealTimer) return;
-        revealTimer = setInterval(() => {
+      function startAutoReveal(){
+        if(revealTimer) return;
+        revealTimer = setInterval(()=>{
           revealNext();
-          if (revealIndex >= lines.length) { clearInterval(revealTimer); revealTimer = null; }
-        }, fast ? 120 : 420);
+          if(revealIndex >= lines.length) clearInterval(revealTimer);
+        }, fast ? 150 : 600);
       }
 
-      function stopAutoReveal() { if (revealTimer) { clearInterval(revealTimer); revealTimer = null; } }
+      function stopAutoReveal(){
+        if(revealTimer){ clearInterval(revealTimer); revealTimer = null; }
+      }
 
-      // faster reveal on click (reveals a few lines)
-      paper.removeEventListener('click', paper._clickHandler); // safe remove if re-init
-      paper._clickHandler = () => {
+      paper.addEventListener('click', ()=>{
         fast = true;
-        for (let i = 0; i < 4; i++) revealNext();
+        for(let i=0;i<3;i++) revealNext();
         stopAutoReveal();
         startAutoReveal();
-      };
-      paper.addEventListener('click', paper._clickHandler);
+      });
 
-      paper.addEventListener('pointerenter', () => { startAutoReveal(); });
-      paper.addEventListener('pointerleave', () => { stopAutoReveal(); fast = false; });
+      paper.addEventListener('pointerenter', ()=> startAutoReveal());
+      paper.addEventListener('pointerleave', ()=> { stopAutoReveal(); fast=false; });
 
-      smileBtn.onclick = () => {
+      smileBtn.onclick = ()=>{
         smileBtn.disabled = true;
         smileBtn.textContent = 'Sending smiles...';
         runConfetti();
-        setTimeout(() => {
+        setTimeout(()=>{
           finalText.textContent = "Then my mission's complete ❤️";
           final.classList.add('visible');
           smileBtn.style.display = 'none';
-        }, 1200);
+        },1200);
       };
 
-      replay.onclick = () => {
-        // cleanup: remove click handler to avoid stacking
-        paper.removeEventListener('click', paper._clickHandler);
-        initLocal();
+      replay.onclick = ()=>{
+        const newIndex = Math.floor(Math.random()*allLetters.length);
+        showLetter(allLetters[newIndex]);
       };
     }
 
-    // ---------- Confetti (same as before) ----------
-    function runConfetti() {
+    function runConfetti(){
       const canvas = document.getElementById('confettiCanvas');
       const ctx = canvas.getContext('2d');
-      canvas.style.display = 'block';
-      canvas.width = window.innerWidth;
-      canvas.height = window.innerHeight;
-
-      const particles = [];
-      const colors = [[255,107,107],[255,205,86],[86,188,255],[178,102,255],[255,132,180]];
+      canvas.style.display='block';
+      canvas.width=window.innerWidth;
+      canvas.height=window.innerHeight;
+      const particles=[], colors=[[255,107,107],[255,205,86],[86,188,255],[178,102,255],[255,132,180]];
       function rand(min,max){ return Math.random()*(max-min)+min; }
-
-      for (let i=0;i<160;i++){
-        particles.push({
-          x: rand(0,canvas.width),
-          y: rand(-canvas.height,0),
-          vx: rand(-2.5,2.5),
-          vy: rand(2.5,7),
-          size: Math.floor(rand(6,12)),
-          color: colors[Math.floor(rand(0,colors.length))],
-          rot: rand(0,Math.PI*2),
-          vr: rand(-0.12,0.12),
-          ttl: rand(2200,4200),
-          born: Date.now()
-        });
+      for(let i=0;i<140;i++){
+        particles.push({x:rand(0,canvas.width),y:rand(-canvas.height,0),vx:rand(-2,2),vy:rand(2,7),size:Math.floor(rand(6,12)),color:colors[Math.floor(rand(0,colors.length))],rot:rand(0,Math.PI*2),vr:rand(-0.12,0.12),ttl:rand(2200,4200),born:Date.now()});
       }
-
       let raf;
       function frame(){
         ctx.clearRect(0,0,canvas.width,canvas.height);
-        const now = Date.now();
+        const now=Date.now();
         particles.forEach(p=>{
-          const age = now - p.born;
-          if (age > p.ttl) return;
-          p.x += p.vx; p.y += p.vy; p.vy += 0.06; p.rot += p.vr;
-          ctx.save(); ctx.translate(p.x,p.y); ctx.rotate(p.rot);
-          ctx.fillStyle = `rgba(${p.color[0]},${p.color[1]},${p.color[2]},1)`;
+          const age=now-p.born;
+          if(age>p.ttl)return;
+          p.x+=p.vx;p.y+=p.vy;p.vy+=0.06;p.rot+=p.vr;
+          ctx.save();ctx.translate(p.x,p.y);ctx.rotate(p.rot);
+          ctx.fillStyle=`rgba(${p.color[0]},${p.color[1]},${p.color[2]},1)`;
           ctx.fillRect(-p.size/2,-p.size/2,p.size,p.size*0.6);
           ctx.restore();
         });
-        raf = requestAnimationFrame(frame);
+        raf=requestAnimationFrame(frame);
       }
       frame();
-
-      setTimeout(()=>{ cancelAnimationFrame(raf); ctx.clearRect(0,0,canvas.width,canvas.height); canvas.style.display='none'; }, 4500);
+      setTimeout(()=>{cancelAnimationFrame(raf);ctx.clearRect(0,0,canvas.width,canvas.height);canvas.style.display='none';},4200);
     }
 
-    window.addEventListener('resize', ()=>{
-      const canvas = document.getElementById('confettiCanvas');
-      canvas.width = window.innerWidth; canvas.height = window.innerHeight;
+    window.addEventListener('resize',()=>{
+      const canvas=document.getElementById('confettiCanvas');
+      canvas.width=window.innerWidth;canvas.height=window.innerHeight;
     });
 
-    // kick off local generation
-    initLocal();
+    init();
   </script>
 </body>
 </html>
